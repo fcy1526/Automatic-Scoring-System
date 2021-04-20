@@ -8,19 +8,13 @@ import com.fcy.scoreservice.entity.SysErrorLog;
 import com.fcy.scoreservice.entity.SysLog;
 import com.fcy.scoreservice.entity.User;
 import com.fcy.scoreservice.entity.dto.LogDto;
-import com.fcy.scoreservice.mapper.LogMapper;
 import com.fcy.scoreservice.mapper.UserMapper;
 import com.fcy.scoreservice.service.LogService;
 import com.fcy.scoreservice.util.AuthUtil;
 import com.fcy.scoreservice.util.DateUtil;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @Describe:
@@ -35,9 +29,6 @@ public class LogServiceImpl implements LogService {
 
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private LogMapper logMapper;
 
     @Override
     public void log(SysLog sysLog) {

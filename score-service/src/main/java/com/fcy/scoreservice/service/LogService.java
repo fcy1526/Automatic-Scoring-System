@@ -1,10 +1,6 @@
 package com.fcy.scoreservice.service;
 
-import com.fcy.scoreservice.entity.SysErrorLog;
 import com.fcy.scoreservice.entity.SysLog;
-import com.github.pagehelper.PageInfo;
-
-import java.util.Map;
 
 /**
  * @Describe:
