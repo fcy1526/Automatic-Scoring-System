@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.scoreservice.mapper.CourseMapper">
+
+    <insert id="addCourse" useGeneratedKeys="true" keyProperty="courseId" keyColumn="course_id">
+        insert into t_course(name, create_time, end_time, status, stage_num, teacher_id, current_stage)
+        values(#{name}, #{createTime}, #{endTime},
+               #{status, typeHandler=com.fcy.scoreservice.mapper.typehandle.CourseStatusTypeHandle},
+               #{stageNum}, #{teacherId}, #{currentStage})
+    </insert>
+
+    <insert id="addCourseClass">
+        insert into t_course_class(class_id, course_id)
+        values
+        <foreach collection="classIds" item="classId" separator=",">
+            (#{classId}, #{courseId})
+        </foreach>
+    </insert>
+
+    <update id="setCurrentStage">
+        update t_course set status = #{status}, current_stage = #{currentStage}
+        where course_id = ${courseId}
+    </update>
+
+    <update id="complete">
+        update t_course set status = '已完成' where course_id = #{courseId}
+    </update>
+
+    <resultMap id="CourseListResultMap" type="com.fcy.scoreservice.entity.vo.CourseListVo">
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"></result>
+        <result column="status" jdbcType="VARCHAR" property="status"
+                typeHandler="com.fcy.scoreservice.mapper.typehandle.CourseStatusTypeHandle"></result>
+        <result column="stage_num" jdbcType="INTEGER" property="stageNum"></result>
+        <result column="teacher_id" jdbcType="VARCHAR" property="teacherId"></result>
+        <result column="current_stage" jdbcType="INTEGER" property="currentStage"></result>
+        <collection property="classList" javaType="java.util.List" column="{courseId=course_id}" select="getClassById"></collection>
+        <collection property="stages" javaType="java.util.List" column="{courseId=course_id}" select="getStageById"></collection>
+    </resultMap>
+
+    <select id="getCourseList" resultMap="CourseListResultMap">
+        select DISTINCT c.* from t_course c
+            join t_course_class cc on c.course_id = cc.course_id
+        where c.teacher_id = #{teacherId}
+            <if test="classId != null and classId != ''">
+                and cc.class_id = #{classId}
+            </if>
+            <if test="name != null and name != ''">
+                and c.name like CONCAT('%',#{name},'%')
+            </if>
+            <if test="_parameter.containsKey('status')">
+                and c.status = #{status}
+            </if>
+    </select>
+
+    <resultMap id="CourseListAndGroupResultMap" type="com.fcy.scoreservice.entity.vo.CourseListAndGroupVo">
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"></result>
+        <result column="status" jdbcType="VARCHAR" property="status"
+                typeHandler="com.fcy.scoreservice.mapper.typehandle.CourseStatusTypeHandle"></result>
+        <result column="stage_num" jdbcType="INTEGER" property="stageNum"></result>
+        <result column="teacher_id" jdbcType="VARCHAR" property="teacherId"></result>
+        <result column="current_stage" jdbcType="INTEGER" property="currentStage"></result>
+    </resultMap>
+
+    <select id="getCourseListAndGroup" resultMap="CourseListAndGroupResultMap">
+        select DISTINCT c.* from t_course c
+            join t_course_class cc on c.course_id = cc.course_id
+        where c.teacher_id = #{teacherId}
+            <if test="classId != null and classId != ''">
+                and cc.class_id = #{classId}
+            </if>
+            <if test="name != null and name != ''">
+                and c.name like CONCAT('%',#{name},'%')
+            </if>
+    </select>
+
+    <select id="getClassById" resultType="string">
+        select c.name from t_course_class cc
+            join t_class c on cc.class_id = c.class_id
+        where cc.course_id = #{courseId}
+        order by c.class_id asc
+    </select>
+
+    <resultMap id="StageResultMap" type="com.fcy.scoreservice.entity.Stage">
+        <result column="stage_id" jdbcType="INTEGER" property="stageId"></result>
+        <result column="stage_index" jdbcType="INTEGER" property="stageIndex"></result>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"></result>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"></result>
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+    </resultMap>
+
+    <select id="getStageById" resultMap="StageResultMap">
+        select * from t_stage where course_id = #{courseId}
+    </select>
+
+    <select id="getStageNum" resultType="java.lang.Integer">
+        select stage_num from t_course where course_id = #{courseId}
+    </select>
+
+    <resultMap id="CourseListProcessResultMap" type="com.fcy.scoreservice.entity.vo.CourseListProcessVo">
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"></result>
+        <result column="status" jdbcType="VARCHAR" property="status"
+                typeHandler="com.fcy.scoreservice.mapper.typehandle.CourseStatusTypeHandle"></result>
+        <result column="stage_num" jdbcType="INTEGER" property="stageNum"></result>
+        <result column="teacher_id" jdbcType="VARCHAR" property="teacherId"></result>
+        <result column="current_stage" jdbcType="INTEGER" property="currentStage"></result>
+        <result column="start_time" jdbcType="TIMESTAMP" property="currentStageTime"></result>
+        <result column="stage_id" jdbcType="INTEGER" property="currentStageId"></result>
+    </resultMap>
+
+    <select id="getCourseListProcess" resultMap="CourseListProcessResultMap">
+        select DISTINCT c.*,s.start_time,s.stage_id from t_course c
+            join t_course_class cc on c.course_id = cc.course_id
+            join t_stage s on c.course_id = s.course_id and c.current_stage = s.stage_index
+        where c.teacher_id = #{teacherId} and c.status = '进行中'
+        <if test="classId != null and classId != ''">
+            and cc.class_id = #{classId}
+        </if>
+        <if test="name != null and name != ''">
+            and c.name like CONCAT('%',#{name},'%')
+        </if>
+    </select>
+
+    <resultMap id="CourseListGroupResultMap" type="com.fcy.scoreservice.entity.vo.CourseListGroupVo">
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"></result>
+        <result column="status" jdbcType="VARCHAR" property="status"
+                typeHandler="com.fcy.scoreservice.mapper.typehandle.CourseStatusTypeHandle"></result>
+        <result column="stage_num" jdbcType="INTEGER" property="stageNum"></result>
+        <result column="teacher_id" jdbcType="VARCHAR" property="teacherId"></result>
+        <result column="current_stage" jdbcType="INTEGER" property="currentStage"></result>
+        <result column="start_time" jdbcType="TIMESTAMP" property="currentStageTime"></result>
+        <result column="stage_id" jdbcType="INTEGER" property="currentStageId"></result>
+    </resultMap>
+
+    <select id="getCourseListToGroupScore" resultMap="CourseListGroupResultMap">
+        select DISTINCT c.*,s.start_time,s.stage_id from t_course c
+        join t_course_class cc on c.course_id = cc.course_id
+        join t_stage s on c.course_id = s.course_id and c.current_stage = s.stage_index
+        where c.teacher_id = #{teacherId} and c.status = '进行中'
+        <if test="classId != null and classId != ''">
+            and cc.class_id = #{classId}
+        </if>
+        <if test="name != null and name != ''">
+            and c.name like CONCAT('%',#{name},'%')
+        </if>
+    </select>
+
+    <resultMap id="CourseListMutualMap" type="com.fcy.scoreservice.entity.vo.CourseListMutualVo">
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"></result>
+        <result column="status" jdbcType="VARCHAR" property="status"
+                typeHandler="com.fcy.scoreservice.mapper.typehandle.CourseStatusTypeHandle"></result>
+        <result column="stage_num" jdbcType="INTEGER" property="stageNum"></result>
+        <result column="teacher_id" jdbcType="VARCHAR" property="teacherId"></result>
+        <result column="current_stage" jdbcType="INTEGER" property="currentStage"></result>
+        <result column="start_time" jdbcType="TIMESTAMP" property="currentStageTime"></result>
+        <result column="stage_id" jdbcType="INTEGER" property="stageId"></result>
+    </resultMap>
+
+    <select id="getCourseListMutual" resultMap="CourseListMutualMap">
+        select DISTINCT c.*,s.stage_id, s.start_time from t_mutual_score m
+            join t_stage s on m.stage_id = s.stage_id
+            join t_course c on s.course_id = c.course_id
+        where m.score_id = #{userId} and c.status = '进行中'
+        <if test="name != null and name != ''">
+            and c.name like CONCAT('%',#{name},'%')
+        </if>
+    </select>
+
+    <resultMap id="CourseTeacherResultMap" type="com.fcy.scoreservice.entity.vo.CourseListLeaderVo">
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"></result>
+        <result column="status" jdbcType="VARCHAR" property="status"
+                typeHandler="com.fcy.scoreservice.mapper.typehandle.CourseStatusTypeHandle"></result>
+        <result column="stage_num" jdbcType="INTEGER" property="stageNum"></result>
+        <result column="teacher_id" jdbcType="VARCHAR" property="teacherId"></result>
+        <result column="current_stage" jdbcType="INTEGER" property="currentStage"></result>
+    </resultMap>
+
+    <select id="getCourseTeacher" resultMap="CourseTeacherResultMap">
+        select * from t_course
+        where teacher_id = #{userId} and status = '结束'
+    </select>
+
+    <resultMap id="CourseLeaderResultMap" type="com.fcy.scoreservice.entity.vo.CourseListLeaderVo">
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"></result>
+        <result column="status" jdbcType="VARCHAR" property="status"
+                typeHandler="com.fcy.scoreservice.mapper.typehandle.CourseStatusTypeHandle"></result>
+        <result column="stage_num" jdbcType="INTEGER" property="stageNum"></result>
+        <result column="teacher_id" jdbcType="VARCHAR" property="teacherId"></result>
+        <result column="current_stage" jdbcType="INTEGER" property="currentStage"></result>
+        <result column="group_id" jdbcType="INTEGER" property="groupId"></result>
+    </resultMap>
+
+    <select id="getCourseLeader" resultMap="CourseLeaderResultMap">
+        select c.*,g.group_id from t_group g
+            join t_course c on g.course_id = c.course_id
+        where leader_id = #{userId} and status = '结束'
+    </select>
+
+    <resultMap id="CourseFinalResultMap" type="com.fcy.scoreservice.entity.vo.CourseListTeacherVo">
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"></result>
+        <result column="status" jdbcType="VARCHAR" property="status"
+                typeHandler="com.fcy.scoreservice.mapper.typehandle.CourseStatusTypeHandle"></result>
+        <result column="stage_num" jdbcType="INTEGER" property="stageNum"></result>
+        <result column="teacher_id" jdbcType="VARCHAR" property="teacherId"></result>
+        <result column="current_stage" jdbcType="INTEGER" property="currentStage"></result>
+    </resultMap>
+
+    <select id="getCourseListTeacher" resultMap="CourseFinalResultMap">
+        select c.* from t_course c
+              join t_course_class cc on cc.course_id = c.course_id
+        where c.status = '结束' and cc.class_id = #{classId} and c.teacher_id = #{teacherId}
+        <if test="name != null and name != ''">
+            and c.name like CONCAT('%',#{name},'%')
+        </if>
+    </select>
+
+    <select id="getClassIdsById" resultType="java.lang.Integer">
+        select class_id from t_course_class where course_id = #{courseId}
+    </select>
+
+    <select id="getLeaderScoreCount" resultType="java.lang.Integer">
+        select count(score) from t_leader_score ls
+            join t_group g on ls.student_id = g.leader_id and ls.course_id = g.course_id
+        where ls.course_id = #{courseId}
+    </select>
+
+    <select id="getLeaderTotalCount" resultType="java.lang.Integer">
+        select count(student_id) from t_leader_score ls
+            join t_group g on ls.student_id = g.leader_id and ls.course_id = g.course_id
+        where ls.course_id = #{courseId}
+    </select>
+
+    <select id="getLeaderScoreCountByLeader" resultType="java.lang.Integer">
+        select count(score) from t_leader_score
+        where course_id = #{courseId} and student_id in
+        <foreach collection="members" separator="," item="userId" open="(" close=")">
+            #{userId}
+        </foreach>
+    </select>
+
+    <select id="getMutualCount" resultType="java.lang.Integer">
+        select count(DISTINCT stage_id) from t_mutual_score where stage_id in
+        <foreach collection="list" separator="," item="stageId" open="(" close=")">
+            #{stageId}
+        </foreach>
+    </select>
+
+
+</mapper>

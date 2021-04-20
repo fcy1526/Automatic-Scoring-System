@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.userservice.mapper.AuthMapper">
+
+    <resultMap id="AuthListResultMap" type="com.fcy.userservice.entity.Authority">
+        <result column="auth_id" jdbcType="VARCHAR" property="authId"></result>
+        <result column="auth_name" jdbcType="VARCHAR" property="authName"></result>
+        <result column="path" jdbcType="VARCHAR" property="path"></result>
+        <result column="parent_id" jdbcType="VARCHAR" property="parentId"></result>
+        <result column="grade" jdbcType="INTEGER" property="grade"></result>
+        <result column="btn_name" property="btnName" jdbcType="VARCHAR"></result>
+    </resultMap>
+
+    <select id="getAuthList" resultMap="AuthListResultMap">
+        select auth_id,auth_name,path,parent_id,grade from t_authority ORDER BY auth_id asc
+    </select>
+
+    <select id="getIdsByParentIds" resultType="java.lang.String">
+        select auth_id from t_authority where parent_id in
+        <foreach collection="list" index="index" item="authId" open="(" close=")" separator=",">
+            #{authId}
+        </foreach>
+    </select>
+
+    <select id="getAllAuthBtn" resultType="com.fcy.userservice.entity.Authority">
+        select auth_id as authId, btn_name as btnName from t_authority where grade = '3'
+    </select>
+
+    <select id="getUserAuth" resultType="java.lang.String">
+        select a.auth_id from t_userinfo u
+              join t_user_role ur on u.userid = ur.userid
+              join t_role_auth ra on ur.roleid = ra.role_id
+              join t_authority a on ra.auth_id = a.auth_id
+        where u.userid = #{userId} and a.grade = '3'
+    </select>
+
+    <select id="checkAuth" resultType="java.lang.String">
+        select distinct a.auth_id from t_userinfo u
+              join t_user_role ur on u.userid = ur.userid
+              join t_role_auth ra on ur.roleid = ra.role_id
+              join t_authority a on ra.auth_id = a.auth_id
+        where a.grade = '3' and u.userid = #{userId} and a.btn_name = #{btnName}
+    </select>
+
+</mapper>

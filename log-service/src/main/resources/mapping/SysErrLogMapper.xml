@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.logservice.mapper.SysErrLogMapper">
+    <insert id="save">
+        insert into t_sys_err_log(sys_userid, sys_truename, oper_time, message)
+        values(#{sysUserId}, #{sysTrueName}, #{opertime}, #{message})
+    </insert>
+</mapper>

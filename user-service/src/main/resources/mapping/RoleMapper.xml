@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.userservice.mapper.RoleMapper">
+
+    <insert id="addList">
+        insert into t_user_role(userid, roleid) values
+        <foreach collection="roleList" separator="," item="roleId">
+            (#{userId}, #{roleId})
+        </foreach>
+    </insert>
+
+    <insert id="addOne">
+        insert into t_user_role(userid, roleid) values(#{userId}, #{roleId})
+    </insert>
+
+    <insert id="distributeAuthToRole">
+        insert into t_role_auth(role_id, auth_id) values
+        <foreach collection="authIds.split(',')" item="authId" separator=",">
+            (#{roleId}, #{authId})
+        </foreach>
+    </insert>
+
+    <insert id="addRole" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into t_role(`name`, `describe`, is_sys_role)
+        values (#{name}, #{describe}, #{isSysRole})
+    </insert>
+
+    <update id="update">
+        update t_role set name = #{name}, describe = #{describe} where id = #{id}
+    </update>
+
+    <resultMap id="resultRoleMap" type="com.fcy.userservice.entity.Role">
+        <result column="id" property="id" jdbcType="INTEGER"></result>
+        <result column="name" property="name" jdbcType="VARCHAR"></result>
+        <result column="describe" property="describe" jdbcType="VARCHAR"></result>
+        <result column="is_sys_role" property="isSysRole" jdbcType="INTEGER"></result>
+        <collection property="authorities" ofType="com.fcy.userservice.entity.Authority">
+            <result column="auth_id" property="authId" jdbcType="VARCHAR"></result>
+            <result column="auth_name" property="authName" jdbcType="VARCHAR"></result>
+            <result column="path" property="path" jdbcType="VARCHAR"></result>
+            <result column="grade" property="grade" jdbcType="INTEGER"></result>
+            <result column="parent_id" property="parentId" jdbcType="VARCHAR"></result>
+            <result column="btn_name" property="btnName" jdbcType="VARCHAR"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getRoleList" resultMap="resultRoleMap">
+        select r.*, a.* from t_role r
+             left join t_role_auth ra on r.id = ra.role_id
+             left join t_authority a on ra.auth_id = a.auth_id
+--         where r.name != 'Admin'
+        order by r.id, a.auth_id asc
+    </select>
+
+    <select id="getStudentRoleList" resultType="com.fcy.userservice.entity.Role">
+        select * from t_role where name like 'Student%'
+    </select>
+
+    <select id="getRoleListById" resultType="java.lang.String">
+        select r.name from t_user_role ur
+            join t_role r on ur.roleid = r.id
+        where ur.userid = #{userId}
+    </select>
+
+    <select id="getRoleById" resultMap="resultRoleMap">
+        select r.*, a.* from t_role r
+            left join t_role_auth ra on r.id = ra.role_id
+            left join t_authority a on ra.auth_id = a.auth_id
+        where r.id = #{roleId} order by a.auth_id asc
+    </select>
+
+    <select id="checkRoleIsSystem" resultType="java.lang.Integer">
+        select is_sys_role from t_role where id = #{roleId}
+    </select>
+
+    <delete id="deleteByUserId">
+        delete from t_user_role where userid = #{userId}
+    </delete>
+
+    <delete id="clearAuths">
+        delete from t_role_auth where role_id = #{roleId}
+    </delete>
+
+    <delete id="deleteRoleAuth">
+        delete from t_role_auth where role_id = #{roleId}
+            and auth_id in
+            <foreach collection="authIds" index="index" item="authId" open="(" close=")" separator=",">
+                #{authId}
+            </foreach>
+    </delete>
+
+    <delete id="deleteRoleById">
+        delete from t_role where id = #{roleId}
+    </delete>
+
+</mapper>

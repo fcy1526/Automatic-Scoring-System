@@ -1,0 +1,27 @@
+zuul:
+  host:
+    connect-timeout-millis: 15000 #HTTP连接超时大于Hystrix的超时时间
+    socket-timeout-millis: 60000   #socket超时
+  routes:
+    user-service:
+      path: /userapi/**
+      serviceId: user-service
+      # 使zuul在转发请求时 不过滤掉敏感头部信息
+      sensitiveHeaders:
+    score-service:
+      path: /scoreapi/**
+      serviceId: score-service
+      # 使zuul在转发请求时 不过滤掉敏感头部信息
+      sensitiveHeaders:
+ribbon:
+  ReadTimeout: 60000  #请求处理的超时时间
+  ConnectTimeout: 30000  #请求连接的超时时间
+server:
+  port: 5000
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+spring:
+  application:
+    name: gateway-service

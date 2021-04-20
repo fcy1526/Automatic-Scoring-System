@@ -1,0 +1,29 @@
+server:
+  port: 7777
+
+spring:
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: admin
+    password: 123456
+    publisher-confirms: true
+    virtual-host: /
+  application:
+    name: log-service
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/automatic_scoring_system?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
+    driver-class-name: com.mysql.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath:mapping/*Mapper.xml
+  type-aliases-package: com.fcy.logservice.entity
+
+#mybatis分页插件pagehelper
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql

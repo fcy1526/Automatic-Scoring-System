@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.scoreservice.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.fcy.scoreservice.entity.User">
+        <result column="userid" jdbcType="VARCHAR" property="userId" />
+        <result column="password" jdbcType="VARCHAR" property="password" />
+        <result column="truename" jdbcType="VARCHAR" property="trueName" />
+        <result column="sex" jdbcType="VARCHAR" property="sex" typeHandler="com.fcy.scoreservice.mapper.typehandle.SexTypeHandle"/>
+        <result column="class_id" jdbcType="INTEGER" property="classId" />
+    </resultMap>
+
+    <select id="findByUserid" resultMap="UserResultMap">
+        select * from t_userinfo where userid = #{userId}
+    </select>
+
+    <select id="getStudentList" resultType="com.fcy.scoreservice.entity.vo.UserGroupVo">
+        select userid as userId,truename as trueName from t_userinfo where userid not in (
+            select gs.student_id from t_class c
+                  join t_course_class cc on c.class_id = cc.class_id
+                  join t_group g on cc.course_id = g.course_id
+                  join t_group_student gs on g.group_id = gs.group_id
+            where c.class_id = #{classId} and cc.course_id = #{courseId}
+        ) and class_id = #{classId}
+    </select>
+
+    <select id="getStudentIds" resultType="java.util.HashMap">
+        select userid,class_id from t_userinfo
+        where class_id in
+        <foreach collection="list" separator="," open="(" close=")" item="classId">
+            #{classId}
+        </foreach>
+    </select>
+
+    <select id="getAllStudentList" resultType="com.fcy.scoreservice.entity.vo.UserGroupVo">
+        select userid as userId, truename as trueName from t_userinfo
+        where class_id = #{classId}
+    </select>
+
+    <select id="getStudentListByCourseId" resultType="java.lang.String">
+        select DISTINCT u.userid from t_course_class cc
+            join t_userinfo u on cc.class_id = u.class_id
+        where cc.course_id = #{courseId}
+    </select>
+
+    <select id="getStudentCount" resultType="java.lang.Integer">
+        select count(*) from t_userinfo where class_id = #{classId}
+    </select>
+
+</mapper>

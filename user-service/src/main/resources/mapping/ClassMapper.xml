@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.userservice.mapper.ClassMapper">
+
+    <select id="getClassList" resultType="com.fcy.userservice.entity.Class">
+        select class_id as classId, name from t_class
+    </select>
+
+    <select id="getClassesById" resultType="java.lang.String">
+        select c.name from t_teach_class tc
+            join t_class c on tc.class_id = c.class_id
+        where tc.userid = #{userId}
+    </select>
+
+    <resultMap id="ClassListResultMap" type="com.fcy.userservice.entity.vo.ClassListVo">
+        <result column="class_id" jdbcType="INTEGER" property="classId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="count" jdbcType="INTEGER" property="count"></result>
+        <collection property="studentList" javaType="java.util.List" column="{classId=class_id}" select="getStudentById"></collection>
+        <collection property="teachers" javaType="java.util.List" column="{classId=class_id}" select="getTeacherById"></collection>
+    </resultMap>
+
+    <select id="query" resultMap="ClassListResultMap">
+        select c.class_id,c.name,count(u.userid) as count from t_class c
+            left join t_userinfo u on c.class_id = u.class_id
+        where c.name like CONCAT('%',#{name},'%') group by c.class_id
+    </select>
+
+    <resultMap id="ClassStudentResultMap" type="com.fcy.userservice.entity.vo.ClassStudentVo">
+        <result column="userid" jdbcType="VARCHAR" property="userId"></result>
+        <result column="truename" jdbcType="VARCHAR" property="trueName"></result>
+        <result column="sex" jdbcType="VARCHAR" property="sex"></result>
+        <collection property="roles" ofType="string">
+            <result column="describe" jdbcType="VARCHAR"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getStudentById" resultMap="ClassStudentResultMap">
+        select u.userid, u.truename,u.sex, r.describe from t_userinfo u
+            left join t_user_role ur on u.userid = ur.userid
+            left join t_role r on ur.roleid = r.id
+        where u.class_id = #{classId}
+    </select>
+
+    <select id="getTeacherById" resultType="com.fcy.userservice.entity.User">
+        select u.userid as userId, u.truename as trueName from t_teach_class tc
+            join t_userinfo u on tc.userid = u.userid
+        where tc.class_id = #{classId}
+    </select>
+
+    <select id="getClassById" resultType="com.fcy.userservice.entity.Class">
+        select class_id as classId, name from t_class where class_id = #{classId}
+    </select>
+
+    <select id="getClassListByTeacherId" resultType="com.fcy.userservice.entity.Class">
+        select c.class_id as classId, c.name from t_teach_class tc
+              join t_class c on tc.class_id = c.class_id
+        where tc.userid = #{teacherId}
+    </select>
+
+    <select id="getTotalCount" resultType="java.lang.Integer">
+        select count(1) from t_userinfo where class_id = #{classId}
+    </select>
+
+    <insert id="addList">
+        insert into t_teach_class(userid, class_id) values
+        <foreach collection="teachClasses" separator="," item="classId">
+            (#{userId}, #{classId})
+        </foreach>
+    </insert>
+
+    <insert id="addClass" parameterType="com.fcy.userservice.entity.dto.ClassAddRequestDto">
+        insert into t_class(name) values(#{name})
+    </insert>
+
+    <insert id="setTeacher">
+        insert into t_teach_class(userid, class_id) values
+        <foreach collection="teacherIdList" separator="," item="teacherId">
+            (#{teacherId}, #{classId})
+        </foreach>
+    </insert>
+
+    <update id="updateClass" parameterType="com.fcy.userservice.entity.dto.ClassUpdateRequestDto">
+        update t_class set name = #{name} where class_id = #{classId}
+    </update>
+
+    <delete id="delete">
+        delete from t_teach_class where userid = #{userId}
+    </delete>
+
+    <delete id="deleteClassById">
+        delete from t_class where class_id = #{classId}
+    </delete>
+
+    <delete id="deleteTeacher">
+        delete from t_teach_class where class_id = #{classId}
+    </delete>
+
+</mapper>

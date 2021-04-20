@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.uaaservice.mapper.UserMapper">
+
+    <resultMap id="resultUserMap" type="com.fcy.uaaservice.entity.User">
+        <result column="userid" jdbcType="INTEGER" property="userId" />
+        <result column="password" jdbcType="VARCHAR" property="password" />
+        <result column="truename" jdbcType="VARCHAR" property="trueName" />
+        <result column="sex" jdbcType="VARCHAR" property="sex" typeHandler="com.fcy.uaaservice.mapper.typehandle.SexTypeHandle"/>
+
+        <collection property="authorities" ofType="com.fcy.uaaservice.entity.Role">
+            <result column="id" property="id"></result>
+            <result column="name" property="name"></result>
+        </collection>
+    </resultMap>
+
+    <select id="findByUserid" resultMap="resultUserMap">
+        SELECT u.*, r.* FROM `t_userinfo` u join t_user_role ur on u.userid = ur.userid
+            join t_role r on ur.roleid = r.id where u.userid = #{userId};
+    </select>
+</mapper>

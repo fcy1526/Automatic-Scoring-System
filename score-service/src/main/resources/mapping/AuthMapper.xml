@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.scoreservice.mapper.AuthMapper">
+
+    <select id="checkAuth" resultType="java.lang.String">
+        select distinct a.auth_id from t_userinfo u
+                                           join t_user_role ur on u.userid = ur.userid
+                                           join t_role_auth ra on ur.roleid = ra.role_id
+                                           join t_authority a on ra.auth_id = a.auth_id
+        where a.grade = '3' and u.userid = #{userId} and a.btn_name = #{btnName}
+    </select>
+
+</mapper>

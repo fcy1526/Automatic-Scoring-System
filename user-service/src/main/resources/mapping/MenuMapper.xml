@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.userservice.mapper.MenuMapper">
+
+    <resultMap id="MenuListResultMap" type="com.fcy.userservice.entity.Menu">
+        <result column="menu_id" property="menuId" jdbcType="VARCHAR"></result>
+        <result column="menu_name" property="menuName" jdbcType="VARCHAR"></result>
+        <result column="menu_href" property="menuHref" jdbcType="VARCHAR"></result>
+        <result column="parent_id" property="parentId" jdbcType="VARCHAR"></result>
+    </resultMap>
+
+    <select id="getMenuList" resultMap="MenuListResultMap">
+        select distinct m.menu_id, menu_name, menu_href, parent_id from t_userinfo u
+            join t_user_role ur on u.userid = ur.userid
+            join t_role_auth ra on ur.roleid = ra.role_id
+            join t_auth_menu am on ra.auth_id = am.auth_id
+            join t_menu m on am.menu_id = m.menu_id
+        where u.userid = #{userId} ORDER BY menu_id asc
+    </select>
+</mapper>

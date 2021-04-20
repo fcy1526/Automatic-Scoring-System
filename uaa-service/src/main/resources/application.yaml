@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: uaa-service
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/automatic_scoring_system?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
+mybatis:
+  mapper-locations: classpath:mapping/*Mapper.xml
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+server:
+  port: 9999

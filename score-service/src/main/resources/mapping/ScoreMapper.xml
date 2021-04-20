@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.scoreservice.mapper.ScoreMapper">
+
+    <insert id="initStudentScore">
+        insert into t_student_score(student_id, stage_id, class_id) values
+        <foreach collection="stageIds" item="stageId" separator=",">
+            <foreach collection="users" item="user" separator=",">
+                (#{user.userid}, #{stageId}, #{user.class_id})
+            </foreach>
+        </foreach>
+    </insert>
+
+    <insert id="mutualScoreInit">
+        insert into t_mutual_score(score_id, target_id, group_id, stage_id)
+        values
+        <foreach collection="mutualGroup" separator="," item="map">
+            (#{map.scoreId},#{map.targetId},#{map.groupId},#{stageId})
+        </foreach>
+    </insert>
+
+    <insert id="initLeaderScore">
+        insert into t_leader_score(student_id, course_id)
+        values
+        <foreach collection="studentList" item="userId" separator=",">
+            (#{userId},#{courseId})
+        </foreach>
+    </insert>
+
+    <insert id="initTeacherScore">
+        insert into t_teacher_score(student_id, course_id)
+        values
+        <foreach collection="studentList" item="userId" separator=",">
+            (#{userId},#{courseId})
+        </foreach>
+    </insert>
+
+    <insert id="initGroupScore">
+        insert into t_group_score(score_id,type,stage_id,group_id)
+        values
+        <foreach collection="list" item="groupScore" separator=",">
+            (#{groupScore.scoreId}, #{groupScore.type}, #{groupScore.stageId}, #{groupScore.groupId})
+        </foreach>
+    </insert>
+
+    <insert id="initAvgGroupScore">
+        insert into t_avg_group_score(group_id, stage_id)
+        values
+        <foreach collection="stageIds" item="stageId" separator=",">
+            <foreach collection="groupIds" item="groupId" separator=",">
+                (#{groupId}, #{stageId})
+            </foreach>
+        </foreach>
+    </insert>
+
+    <insert id="saveTotalScore">
+        insert into t_total_score(student_id, course_id,
+                                  student_score, group_score, mutual_score, leader_score, teacher_score, score)
+        values
+        <foreach collection="list" item="totalScore" separator=",">
+            (#{totalScore.studentId}, #{totalScore.courseId},
+             #{totalScore.studentScore}, #{totalScore.groupScore},
+             #{totalScore.mutualScore}, #{totalScore.leaderScore},
+             #{totalScore.teacherScore}, #{totalScore.score})
+        </foreach>
+    </insert>
+
+    <insert id="saveProportion">
+        insert into t_proportion(course_id, student_score, group_score, mutual_score, leader_score, teacher_score)
+        values
+        (#{courseId}, #{proportionDto.studentScore}, #{proportionDto.groupScore}, #{proportionDto.mutualScore},
+         #{proportionDto.leaderScore}, #{proportionDto.teacherScore})
+    </insert>
+
+    <update id="saveStudentScore">
+        update t_student_score set score = #{score}
+        where stage_id = #{stageId} and student_id = #{userId}
+    </update>
+
+    <update id="saveMutualScore">
+        update t_mutual_score set score = #{score}
+        where stage_id = #{stageId} and target_id = #{targetId} and score_id = #{scoreId}
+    </update>
+
+    <update id="saveLeaderScore">
+        update t_leader_score set score = #{score}
+        where student_id = #{userId} and course_id = #{courseId}
+    </update>
+
+    <update id="saveTeacherScore">
+        update t_teacher_score set score = #{score}
+        where student_id = #{userId} and course_id = #{courseId}
+    </update>
+
+    <update id="saveGroupScore">
+        update t_group_score set score = #{score}
+        where score_id = #{scoreId} and stage_id = #{stageId} and group_id = #{groupId}
+    </update>
+
+    <update id="saveAvgGroupScore">
+        update t_avg_group_score set score = #{avg} where stage_id = #{stageId} and group_id = #{groupId}
+    </update>
+
+    <select id="getStudentList" resultType="com.fcy.scoreservice.entity.vo.StudentScoreListVo">
+        select ss.student_id as userId, ss.score from t_course c
+            join t_stage s on s.course_id = c.course_id and s.stage_index = current_stage
+            join t_student_score ss on ss.stage_id = s.stage_id
+        where c.course_id = #{courseId}
+    </select>
+
+    <resultMap id="MutualScoreListResultMap" type="com.fcy.scoreservice.entity.MutualScore">
+        <result column="id" property="id" jdbcType="INTEGER"></result>
+        <result column="score_id" property="scoreId" jdbcType="VARCHAR"></result>
+        <result column="target_id" property="targetId" jdbcType="VARCHAR"></result>
+        <result column="group_id" property="groupId" jdbcType="INTEGER"></result>
+        <result column="stage_id" property="stageId" jdbcType="INTEGER"></result>
+        <result column="score" property="score" jdbcType="INTEGER"></result>
+    </resultMap>
+
+    <select id="checkMutual" resultMap="MutualScoreListResultMap">
+        select * from t_mutual_score where stage_id = #{stageId}
+    </select>
+
+    <select id="getMutualCount" resultType="java.util.Map">
+        select count(score) as scoreCount,count(score_id) as groupCount from t_mutual_score m
+        where stage_id = #{stageId} and score_id = #{userId}
+    </select>
+
+    <select id="getStudentGroup" resultType="com.fcy.scoreservice.entity.vo.StudentGroupMutualVo">
+        select m.target_id as userId, m.score, u.truename as trueName from t_mutual_score m
+            join t_userinfo u on m.target_id = u.userid
+        where score_id = #{userId} and stage_id = #{stageId}
+    </select>
+
+    <select id="getStudentLeader" resultType="com.fcy.scoreservice.entity.vo.StudentLeaderVo">
+        select u.userid as userId,u.truename as trueName,ls.score,u.class_id as classId from t_group g
+            join t_leader_score ls on g.leader_id = ls.student_id and g.course_id = ls.course_id
+            join t_userinfo u on u.userid = ls.student_id
+        where g.course_id = #{courseId}
+    </select>
+
+    <select id="getStudentListLeader" resultType="com.fcy.scoreservice.entity.vo.StudentLeaderVo">
+        select ls.student_id as userId,u.truename as trueName,ls.score from t_group_student gs
+            join t_leader_score ls on ls.student_id = gs.student_id
+            join t_userinfo u on u.userid = ls.student_id
+        where group_id = #{groupId} and ls.course_id = #{courseId}
+    </select>
+
+    <select id="getFinalStudentList" resultType="com.fcy.scoreservice.entity.vo.StudentScoreListVo">
+        select student_id as userId, score from t_teacher_score
+        where course_id = #{courseId}
+    </select>
+
+    <select id="getGroupScoreCount" resultType="java.lang.Integer">
+        select count(score) from t_avg_group_score where stage_id = #{stageId}
+    </select>
+
+    <select id="getStudentScoreCount" resultType="java.lang.Integer">
+        select count(score) from t_student_score where stage_id = #{stageId} and class_id = #{classId}
+    </select>
+
+    <resultMap id="GroupScoreResultMap" type="com.fcy.scoreservice.entity.GroupScore">
+        <result column="id" jdbcType="INTEGER" property="id"></result>
+        <result column="score_id" jdbcType="VARCHAR" property="scoreId"></result>
+        <result column="type" jdbcType="VARCHAR" property="type"></result>
+        <result column="stage_id" jdbcType="INTEGER" property="stageId"></result>
+        <result column="group_id" jdbcType="INTEGER" property="groupId"></result>
+        <result column="score" jdbcType="INTEGER" property="score"></result>
+        <result column="truename" jdbcType="VARCHAR" property="trueName"></result>
+    </resultMap>
+
+    <select id="getGroupScore" resultMap="GroupScoreResultMap">
+        select gs.*,u.truename from t_group_score gs
+            join t_group g on gs.group_id = g.group_id
+            join t_userinfo u on gs.score_id = u.userid
+        where gs.stage_id = #{stageId} and g.leader_id = #{leaderId}
+    </select>
+
+    <select id="getTeacherScoreCount" resultType="java.lang.Integer">
+        select count(ts.score) from t_teacher_score ts
+            join t_userinfo u on ts.student_id = u.userid
+        where u.class_id = #{classId} and ts.course_id = #{courseId}
+    </select>
+
+    <resultMap id="StudentScoreListResultMap" type="com.fcy.scoreservice.entity.StudentScore">
+        <result column="student_id" property="userId" jdbcType="VARCHAR"></result>
+        <result column="stage_id" property="stageId" jdbcType="INTEGER"></result>
+        <result column="score" property="score" jdbcType="INTEGER"></result>
+        <result column="class_id" property="classId" jdbcType="INTEGER"></result>
+    </resultMap>
+
+    <select id="getStudentScoreList" resultMap="StudentScoreListResultMap">
+        select * from t_student_score where stage_id in
+        <foreach collection="list" separator="," open="(" close=")" item="stageId">
+            #{stageId}
+        </foreach>
+    </select>
+
+    <select id="getAvgGroupScore" resultType="com.fcy.scoreservice.entity.AvgGroupScore">
+        select group_id as groupId, stage_id as stageId, score from t_avg_group_score
+        where stage_id in
+        <foreach collection="list" separator="," open="(" close=")" item="stageId">
+            #{stageId}
+        </foreach>
+    </select>
+
+    <select id="getMutualScore" resultMap="MutualScoreListResultMap">
+        select * from t_mutual_score where stage_id in
+        <foreach collection="list" separator="," open="(" close=")" item="stageId">
+            #{stageId}
+        </foreach>
+    </select>
+
+    <select id="getLeaderScore" resultType="com.fcy.scoreservice.entity.LeaderScore">
+        select student_id as studentId, score from t_leader_score
+        where course_id = #{courseId}
+    </select>
+
+    <select id="getTeacherScore" resultType="com.fcy.scoreservice.entity.TeacherScore">
+        select student_id as studentId, score from t_teacher_score
+        where course_id = #{courseId}
+    </select>
+
+    <resultMap id="UserScoreResultMap" type="com.fcy.scoreservice.entity.vo.UserScoreVo">
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="score" jdbcType="FLOAT" property="score"></result>
+        <result column="student_score" jdbcType="FLOAT" property="studentScore"></result>
+        <result column="group_score" jdbcType="FLOAT" property="groupScore"></result>
+        <result column="mutual_score" jdbcType="FLOAT" property="mutualScore"></result>
+        <result column="leader_score" jdbcType="FLOAT" property="leaderScore"></result>
+        <result column="teacher_score" jdbcType="FLOAT" property="teacherScore"></result>
+    </resultMap>
+
+    <select id="getUserScore" resultMap="UserScoreResultMap">
+        select ts.*,c.name from t_total_score ts join t_course c on ts.course_id = c.course_id
+        where ts.student_id = #{userId} and c.status = '已完成'
+        <if test="name != null and name != ''">
+            and c.name like CONCAT('%',#{name},'%')
+        </if>
+    </select>
+
+</mapper>

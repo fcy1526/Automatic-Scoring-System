@@ -1,0 +1,44 @@
+server:
+  port: 8081
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/automatic_scoring_system?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
+    driver-class-name: com.mysql.jdbc.Driver
+  redis:
+    host: 127.0.0.1
+    port: 6379
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: admin
+    password: 123456
+    publisher-confirms: true
+    virtual-host: /
+
+mybatis:
+  mapper-locations: classpath:mapping/*Mapper.xml
+  type-aliases-package: com.fcy.userservice.entity
+#  type-handlers-package: com.example.helloservice.mapper.typehandle
+
+#配置分页插件pagehelper
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+feign:
+  hystrix:
+    enabled: true
+
+

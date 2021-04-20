@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.userservice.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.fcy.userservice.entity.User">
+        <result column="userid" jdbcType="VARCHAR" property="userId" />
+        <result column="password" jdbcType="VARCHAR" property="password" />
+        <result column="truename" jdbcType="VARCHAR" property="trueName" />
+        <result column="sex" jdbcType="VARCHAR" property="sex" typeHandler="com.fcy.userservice.mapper.typehandle.SexTypeHandle"/>
+        <result column="class_id" jdbcType="INTEGER" property="classId" />
+    </resultMap>
+
+    <delete id="deleteByUserId">
+        delete from t_userinfo where userid = #{userId}
+    </delete>
+
+    <select id="findByUserid" resultMap="UserResultMap">
+        select * from t_userinfo where userid = #{userId}
+    </select>
+
+    <resultMap id="StudentListResultMap" type="com.fcy.userservice.entity.vo.StudentListRequestVo">
+        <result column="userid" jdbcType="VARCHAR" property="userId" />
+        <result column="truename" jdbcType="VARCHAR" property="trueName" />
+        <result column="sex" jdbcType="VARCHAR" property="sexStr"/>
+        <result column="name" jdbcType="VARCHAR" property="className" />
+        <collection property="roles" javaType="java.util.List" column="{userId=userid}" select="getRoleByUserId"></collection>
+    </resultMap>
+
+    <select id="getStudentList" resultMap="StudentListResultMap">
+        select distinct(u.userid),u.truename,u.sex,c.name from t_userinfo u
+            left join t_user_role ur on u.userid = ur.userid
+            left join t_role r on ur.roleid = r.id
+            left join t_class c on u.class_id = c.class_id
+        where r.name = 'Student'
+        <if test="_parameter.containsKey('userId')">
+            and u.userid like CONCAT('%',#{userId},'%')
+        </if>
+        <if test="_parameter.containsKey('trueName')">
+            and u.truename like CONCAT('%',#{trueName},'%')
+        </if>
+        order by u.userid asc
+    </select>
+
+    <select id="getRoleByUserId" resultType="com.fcy.userservice.entity.Role">
+        select r.id, r.describe from t_user_role ur left join t_role r on ur.roleid = r.id
+        where ur.userid = #{userId}
+    </select>
+
+    <resultMap id="StudentUpdateResultMap" type="com.fcy.userservice.entity.vo.StudentUpdateVo">
+        <result column="userid" property="userId" jdbcType="VARCHAR"></result>
+        <result column="truename" property="trueName" jdbcType="VARCHAR"></result>
+        <result column="sex" property="sex" jdbcType="VARCHAR" typeHandler="com.fcy.userservice.mapper.typehandle.SexTypeHandle"></result>
+        <result column="class_id" property="classId" jdbcType="INTEGER"></result>
+    </resultMap>
+
+    <select id="getStudentById" resultMap="StudentUpdateResultMap">
+        select userid,truename,sex,class_id from t_userinfo where userid = #{userId}
+    </select>
+
+    <resultMap id="TeacherUpdateResultMap" type="com.fcy.userservice.entity.vo.TeacherUpdateVo">
+        <result column="userid" property="userId" jdbcType="VARCHAR"></result>
+        <result column="truename" property="trueName" jdbcType="VARCHAR"></result>
+        <result column="sex" property="sex" jdbcType="VARCHAR" typeHandler="com.fcy.userservice.mapper.typehandle.SexTypeHandle"></result>
+        <collection property="teachClasses" ofType="integer">
+            <result column="class_id"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getTeacherById" resultMap="TeacherUpdateResultMap">
+        select u.userid,u.truename,u.sex,tc.class_id from t_userinfo u
+            join t_teach_class tc on u.userid = tc.userid
+        where u.userid = #{userId}
+    </select>
+
+    <resultMap id="TeacherListResultMap" type="com.fcy.userservice.entity.vo.TeacherListRequestVo">
+        <result column="userid" jdbcType="VARCHAR" property="userId"></result>
+        <result column="truename" jdbcType="VARCHAR" property="trueName"></result>
+        <result column="sex" jdbcType="VARCHAR" property="sexStr"></result>
+        <collection property="teachClasses" javaType="java.util.List" column="{userId=userid}" select="getClassByUserId"></collection>
+    </resultMap>
+
+    <select id="getTeacherList" resultMap="TeacherListResultMap">
+        select u.userid,u.truename,u.sex from t_userinfo u
+            left join t_user_role ur on u.userid = ur.userid
+            left join t_role r on ur.roleid = r.id
+        where r.name = 'Teacher'
+        <if test="_parameter.containsKey('userId')">
+            and u.userid like CONCAT('%',#{userId},'%')
+        </if>
+        <if test="_parameter.containsKey('trueName')">
+            and u.truename like CONCAT('%',#{trueName},'%')
+        </if>
+        order by u.userid asc
+    </select>
+
+    <resultMap id="ClassResultMap" type="com.fcy.userservice.entity.Class">
+        <result column="class_id" jdbcType="INTEGER" property="classId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+    </resultMap>
+
+    <select id="getClassByUserId" resultMap="ClassResultMap">
+        select c.class_id,c.name from t_teach_class tc
+            join t_class c on tc.class_id = c.class_id
+        where tc.userid = #{userId}
+    </select>
+
+    <select id="getTeacherSimpleList" resultType="com.fcy.userservice.entity.vo.ClassGetTeacherListVo">
+        select u.userid as userId,u.truename as name from t_userinfo u
+              left join t_user_role ur on u.userid = ur.userid
+              left join t_role r on ur.roleid = r.id
+        where r.name = 'Teacher' order by u.userid asc
+    </select>
+
+    <insert id="addUser" parameterType="com.fcy.userservice.entity.User">
+        insert into t_userinfo(userid, password, truename, sex, class_id)
+        values(#{userId}, #{password}, #{trueName},
+               #{sex, typeHandler=com.fcy.userservice.mapper.typehandle.SexTypeHandle}, #{classId})
+    </insert>
+
+    <update id="update">
+        update t_userinfo set truename = #{trueName}, sex = #{sex, typeHandler=com.fcy.userservice.mapper.typehandle.SexTypeHandle}
+        where userid = #{userId}
+    </update>
+
+    <update id="updateStudent" parameterType="com.fcy.userservice.entity.dto.StudentUpdateRequestDto">
+        update t_userinfo set truename = #{trueName}, sex = #{sex, typeHandler=com.fcy.userservice.mapper.typehandle.SexTypeHandle},
+                class_id = #{classId}
+        where userid = #{userId}
+    </update>
+
+    <update id="updatePwd" parameterType="com.fcy.userservice.entity.dto.PasswordUpdateRequestDto">
+        update t_userinfo set password = #{password}
+        where userid = #{userId}
+    </update>
+
+    <update id="deleteClassId">
+        update t_userinfo set class_id = ''
+        where class_id = #{classId}
+    </update>
+
+</mapper>

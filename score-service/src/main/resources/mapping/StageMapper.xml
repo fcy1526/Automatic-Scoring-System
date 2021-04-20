@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.scoreservice.mapper.StageMapper">
+    <insert id="addStage">
+        insert into t_stage(stage_index, course_id)
+        values
+        <foreach collection="new int[stageNum]" index="index" separator=",">
+            (#{index}+1, #{courseId})
+        </foreach>
+    </insert>
+
+    <update id="stopCurrentStage">
+        update t_stage set end_time = #{endTime}
+        where stage_index = #{currentStage} and course_id = #{courseId}
+    </update>
+
+    <update id="startNewStage">
+        update t_stage set start_time = #{startTime}
+        where stage_index = #{currentStage} and course_id = #{courseId}
+    </update>
+
+    <select id="getStageId" resultType="java.lang.Integer">
+        select stage_id from t_stage
+        where stage_index = #{currentStage} and course_id = #{courseId}
+    </select>
+
+    <select id="getStageIds" resultType="java.lang.Integer">
+        select stage_id from t_stage
+        where course_id = #{courseId}
+    </select>
+
+    <select id="getCurrentStageId" resultType="java.lang.Integer">
+        select s.stage_id from t_course c
+        join t_stage s on c.course_id = s.course_id and c.current_stage = s.stage_index
+        where c.course_id = #{courseId}
+    </select>
+</mapper>

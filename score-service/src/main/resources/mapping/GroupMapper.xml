@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fcy.scoreservice.mapper.GroupMapper">
+
+    <insert id="addGroup" useGeneratedKeys="true" keyProperty="groupId" keyColumn="group_id">
+        insert into t_group(leader_id, course_id, class_id)
+        values (#{leaderId}, #{courseId}, #{classId})
+    </insert>
+
+    <insert id="addStudentList">
+        insert into t_group_student(group_id, student_id)
+        values
+        <foreach collection="members" item="studentId" separator=",">
+            (#{groupId}, #{studentId})
+        </foreach>
+    </insert>
+
+    <update id="editGroup">
+        update t_group set leader_id = #{leaderId} where group_id = #{groupId}
+    </update>
+
+    <resultMap id="GroupListResultMap" type="com.fcy.scoreservice.entity.vo.GroupListVo">
+        <result column="group_id" jdbcType="INTEGER" property="groupId"></result>
+        <result column="truename" jdbcType="VARCHAR" property="leaderName"></result>
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <collection property="members" javaType="java.util.List" column="{groupId=group_id}" select="getGroupListById"></collection>
+    </resultMap>
+
+    <select id="getGroupList" resultMap="GroupListResultMap">
+        select g.group_id,u.truename,c.course_id from t_course c
+            join t_group g on g.course_id = c.course_id
+            join t_userinfo u on u.userid = g.leader_id
+        where g.class_id = #{classId} and c.course_id in
+            <foreach collection="courseIds" separator="," open="(" close=")" item="courseId">
+                #{courseId}
+            </foreach>
+        ORDER BY g.group_id asc
+    </select>
+
+    <select id="getGroupListById" resultType="string">
+        select u.truename from t_group_student gs
+            join t_userinfo u on gs.student_id = u.userid
+        where group_id = #{groupId}
+    </select>
+
+    <resultMap id="GroupResultMap" type="com.fcy.scoreservice.entity.vo.GroupEditVo">
+        <result column="group_id" jdbcType="INTEGER" property="groupId"></result>
+        <result column="leader_id" jdbcType="VARCHAR" property="leaderId"></result>
+        <result column="course_id" jdbcType="INTEGER" property="courseId"></result>
+        <result column="class_id" jdbcType="INTEGER" property="classId"></result>
+        <collection property="memberList" ofType="com.fcy.scoreservice.entity.vo.UserGroupVo">
+            <result column="student_id" jdbcType="VARCHAR" property="userId"></result>
+            <result column="truename" jdbcType="VARCHAR" property="trueName"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getGroupById" resultMap="GroupResultMap">
+        select g.*,gs.student_id,u.truename from t_group g
+            join t_group_student gs on g.group_id = gs.group_id
+            join t_userinfo u on gs.student_id = u.userid
+        where g.group_id = #{groupId}
+    </select>
+
+    <resultMap id="AllGroupResultMap" type="com.fcy.scoreservice.entity.dto.GroupDto">
+        <result column="leader_id" property="leaderId" jdbcType="VARCHAR"></result>
+        <result column="group_id" property="groupId" jdbcType="INTEGER"></result>
+        <collection property="members" ofType="string">
+            <result column="student_id" jdbcType="VARCHAR"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getAllGroupList" resultMap="AllGroupResultMap">
+        select gs.group_id,g.leader_id,gs.student_id from t_group g
+            join t_group_student gs on g.group_id = gs.group_id
+        where g.course_id = #{courseId}
+    </select>
+
+    <select id="getGroupCount" resultType="java.lang.Integer">
+        select count(1) from t_group
+        where course_id = #{courseId} and class_id = #{classId}
+    </select>
+
+    <select id="getLeaderList" resultType="com.fcy.scoreservice.entity.vo.LeaderVo">
+        select u.userid as userId,u.truename as trueName from t_group g
+            join t_userinfo u on g.leader_id = u.userid
+        where g.class_id = #{classId} and g.course_id = #{courseId}
+    </select>
+
+    <select id="getGroupIdList" resultType="java.lang.Integer">
+        select group_id from t_group where course_id = #{courseId} and class_id = #{classId}
+    </select>
+
+    <select id="getLeaderAndGroupList" resultType="com.fcy.scoreservice.entity.dto.LeaderAndGroupDto">
+        select u.userid as userId,u.truename as trueName,g.group_id as groupId from t_group g
+          join t_userinfo u on g.leader_id = u.userid
+        where g.class_id = #{classId} and g.course_id = #{courseId}
+    </select>
+
+    <select id="getGroupIdByLeaderId" resultType="java.lang.Integer">
+        select group_id from t_group where leader_id = #{leaderId} and course_id = #{courseId}
+    </select>
+
+    <select id="getMembers" resultType="java.lang.String">
+        select gs.student_id from t_group g
+            join t_group_student gs on g.group_id = gs.group_id
+        where g.leader_id = #{userId} and gs.student_id != #{userId} and g.course_id = #{courseId}
+    </select>
+
+    <select id="userForGroup" resultType="com.fcy.scoreservice.entity.dto.GroupStudentDto">
+        select gs.group_id as groupId, gs.student_id as userId from t_group g
+            join t_group_student gs on g.group_id = gs.group_id
+        where g.course_id = #{courseId}
+    </select>
+
+    <delete id="deleteStudent">
+        delete from t_group_student where group_id = #{groupId}
+    </delete>
+
+</mapper>
