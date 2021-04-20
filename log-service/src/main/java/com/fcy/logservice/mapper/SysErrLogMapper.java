@@ -3,6 +3,8 @@ package com.fcy.logservice.mapper;
 import com.fcy.logservice.entity.SysErrorLog;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 /**
  * @Describe:
  * @Author: fuchenyang
@@ -11,4 +13,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface SysErrLogMapper {
     void save(SysErrorLog sysErrorLog);
+
+    List<SysErrorLog> getSysErrLog();
 }

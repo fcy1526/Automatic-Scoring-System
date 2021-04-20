@@ -5,8 +5,12 @@ import com.fcy.logservice.entity.SysLog;
 import com.fcy.logservice.mapper.SysErrLogMapper;
 import com.fcy.logservice.mapper.SysLogMapper;
 import com.fcy.logservice.service.SysLogService;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * @Describe: 
@@ -30,5 +34,30 @@ public class SysLogServiceImpl implements SysLogService {
     @Override
     public void saveSysErrLog(SysErrorLog sysErrorLog) {
         sysErrLogMapper.save(sysErrorLog);
+    }
+
+
+    @Override
+    public PageInfo<SysLog> getSysLog(Map map) {
+        setPage(map);
+        return new PageInfo<SysLog>(sysLogMapper.getSysLog(map));
+    }
+
+    @Override
+    public PageInfo<SysErrorLog> getSysErrLog(Map map) {
+        setPage(map);
+        return new PageInfo<SysErrorLog>(sysErrLogMapper.getSysErrLog());
+    }
+
+    /**
+     * 设置分页
+     * @param map
+     * @return
+     */
+    public void setPage(Map map) {
+        String pageNum = (String) map.get("pageNum");
+        String pageSize = (String) map.get("pageSize");
+        // 设置分页
+        PageHelper.startPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize));
     }
 }

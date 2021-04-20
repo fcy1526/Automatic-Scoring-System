@@ -5,4 +5,16 @@
         insert into t_sys_err_log(sys_userid, sys_truename, oper_time, message)
         values(#{sysUserId}, #{sysTrueName}, #{opertime}, #{message})
     </insert>
+
+    <resultMap id="SysErrLogResultMap" type="com.fcy.logservice.entity.SysErrorLog">
+        <result column="sys_id" jdbcType="INTEGER" property="logId"></result>
+        <result column="sys_userid" jdbcType="VARCHAR" property="sysUserId"></result>
+        <result column="sys_truename" jdbcType="VARCHAR" property="sysTrueName"></result>
+        <result column="oper_time" jdbcType="TIMESTAMP" property="opertime"></result>
+        <result column="message" jdbcType="LONGVARCHAR" property="message"></result>
+    </resultMap>
+
+    <select id="getSysErrLog" resultMap="SysErrLogResultMap">
+        select * from t_sys_err_log
+    </select>
 </mapper>

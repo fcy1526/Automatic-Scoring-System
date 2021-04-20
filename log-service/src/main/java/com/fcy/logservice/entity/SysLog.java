@@ -26,6 +26,8 @@ public class SysLog implements Serializable {
 
     private OperationEnum opertype;
 
+    private String type;
+
     private String opertable;
 
     private String operation;

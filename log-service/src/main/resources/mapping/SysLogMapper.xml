@@ -7,4 +7,21 @@
         values(#{sysUserId}, #{sysTrueName}, #{opertime},
                #{opertype, typeHandler=com.fcy.logservice.mapper.typehandle.OperationEnumTypeHandle}, #{opertable}, #{operation})
     </insert>
+
+    <resultMap id="SysLogResultMap" type="com.fcy.logservice.entity.SysLog">
+        <result column="sys_id" jdbcType="VARCHAR" property="logId"></result>
+        <result column="sys_userid" jdbcType="VARCHAR" property="sysUserId"></result>
+        <result column="sys_truename" jdbcType="VARCHAR" property="sysTrueName"></result>
+        <result column="oper_time" jdbcType="TIMESTAMP" property="opertime"></result>
+        <result column="oper_type" jdbcType="VARCHAR" property="type"></result>
+        <result column="oper_table" jdbcType="VARCHAR" property="opertable"></result>
+        <result column="operation" jdbcType="VARCHAR" property="operation"></result>
+    </resultMap>
+
+    <select id="getSysLog" resultMap="SysLogResultMap">
+        select * from t_sys_log where 1 = 1
+        <if test="type != null and type != ''">
+            and oper_type = #{type}
+        </if>
+    </select>
 </mapper>
