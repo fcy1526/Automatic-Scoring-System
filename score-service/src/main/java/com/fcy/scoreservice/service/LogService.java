@@ -19,7 +19,4 @@ public interface LogService {
 
     void logErr(String errMsg);
 
-    PageInfo<SysLog> getSysLog(Map map);
-
-    PageInfo<SysErrorLog> getSysErrLog(Map map);
 }

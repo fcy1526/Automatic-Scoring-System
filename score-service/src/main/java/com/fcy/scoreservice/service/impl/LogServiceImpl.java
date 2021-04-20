@@ -66,30 +66,6 @@ public class LogServiceImpl implements LogService {
         amqpTemplate.convertAndSend(RabbitConfig.queueName, JSON.toJSONString(logDto));
     }
 
-    @Override
-    public PageInfo<SysLog> getSysLog(Map map) {
-        setPage(map);
-        return new PageInfo<SysLog>(logMapper.getSysLog(map));
-    }
-
-    @Override
-    public PageInfo<SysErrorLog> getSysErrLog(Map map) {
-        setPage(map);
-        return new PageInfo<SysErrorLog>(logMapper.getSysErrLog());
-    }
-
-    /**
-     * 设置分页
-     * @param map
-     * @return
-     */
-    public void setPage(Map map) {
-        String pageNum = (String) map.get("pageNum");
-        String pageSize = (String) map.get("pageSize");
-        // 设置分页
-        PageHelper.startPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize));
-    }
-
     /**
      * 填充当前用户信息 当前时间
      * @param log

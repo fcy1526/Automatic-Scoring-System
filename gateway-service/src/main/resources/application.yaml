@@ -13,6 +13,11 @@ zuul:
       serviceId: score-service
       # 使zuul在转发请求时 不过滤掉敏感头部信息
       sensitiveHeaders:
+    log-service:
+      path: /logapi/**
+      serviceId: log-service
+      # 使zuul在转发请求时 不过滤掉敏感头部信息
+      sensitiveHeaders:
 ribbon:
   ReadTimeout: 60000  #请求处理的超时时间
   ConnectTimeout: 30000  #请求连接的超时时间
