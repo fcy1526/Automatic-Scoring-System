@@ -107,6 +107,11 @@ public class ScoreController {
         return ResultUtil.success(scoreService.getUserScore(map));
     }
 
+    @GetMapping("course/{courseId}")
+    public Result<Object> getScore(@PathVariable("courseId") Integer courseId) {
+        return ResultUtil.success(scoreService.getScore(courseId));
+    }
+
     /**
      * 保存学生表现成绩
      * @param studentScoreDto

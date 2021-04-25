@@ -123,4 +123,14 @@ public class ClassController {
         classService.deleteClassById(classId);
         return ResultUtil.success();
     }
+
+    /**
+     * 获取班级名称
+     * @param classId
+     * @return
+     */
+    @GetMapping("name/{classId}")
+    public Result<Object> getClassName(@PathVariable("classId") Integer classId) {
+        return ResultUtil.success(classService.getClassName(classId));
+    }
 }

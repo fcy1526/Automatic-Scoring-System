@@ -2,6 +2,7 @@ package com.fcy.scoreservice.entity;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 /**
  * @Describe: 总分实体类
@@ -11,6 +12,8 @@ import lombok.Data;
 @Data
 @Builder
 public class TotalScore {
+    @Tolerate
+    public TotalScore () {}
     /**
      * 学生id
      */
@@ -43,4 +46,8 @@ public class TotalScore {
      * 总评分
      */
     private double score;
+    /**
+     * 真实姓名
+     */
+    private String trueName;
 }

@@ -79,4 +79,6 @@ public interface ScoreMapper {
     void saveProportion(Integer courseId, ProportionDto proportionDto);
 
     List<UserScoreVo> getUserScore(Map map);
+
+    List<TotalScore> getTotalScore(List<String> userIds);
 }

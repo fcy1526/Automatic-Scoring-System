@@ -48,4 +48,6 @@ public interface ClassMapper {
     List<Class> getClassListByTeacherId(String teacherId);
 
     Integer getTotalCount(Integer classId);
+
+    String getClassName(Integer classId);
 }

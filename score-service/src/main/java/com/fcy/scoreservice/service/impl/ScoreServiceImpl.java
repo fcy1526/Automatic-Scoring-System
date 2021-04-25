@@ -6,6 +6,7 @@ import com.fcy.scoreservice.entity.dto.*;
 import com.fcy.scoreservice.entity.vo.*;
 import com.fcy.scoreservice.enums.OperationEnum;
 import com.fcy.scoreservice.exception.AutomaticScoringSystemException;
+import com.fcy.scoreservice.feign.UserServiceClient;
 import com.fcy.scoreservice.mapper.*;
 import com.fcy.scoreservice.service.LogService;
 import com.fcy.scoreservice.service.ScoreService;
@@ -49,6 +50,9 @@ public class ScoreServiceImpl implements ScoreService {
 
     @Autowired
     private LogService logService;
+
+    @Autowired
+    private UserServiceClient userServiceClient;
 
     @Override
     public List<StudentScoreListVo> getStudentList(ScoreClassInfoDto scoreClassInfo) {
@@ -418,5 +422,19 @@ public class ScoreServiceImpl implements ScoreService {
         // 设置分页
         PageHelper.startPage(Integer.parseInt(pageNum), Integer.parseInt(pageSize));
         return new PageInfo<UserScoreVo>(scoreMapper.getUserScore(map));
+    }
+
+    @Override
+    public Map<String, List<TotalScore>> getScore(Integer courseId) {
+        List<Integer> classIds = courseMapper.getClassIdsById(courseId);
+        Map<String, List<TotalScore>> map = new HashMap<>();
+        for (Integer classId : classIds) {
+            String className = (String) userServiceClient.getClassName(classId).getData();
+            List<UserGroupVo> userGroupVos = userMapper.getAllStudentList(classId);
+            List<String> userIds = userGroupVos.stream().map(UserGroupVo::getUserId).collect(Collectors.toList());
+            List<TotalScore> totalScores = scoreMapper.getTotalScore(userIds);
+            map.put(className, totalScores);
+        }
+        return map;
     }
 }

@@ -60,6 +60,11 @@ public class ClassServiceImpl implements ClassService {
     }
 
     @Override
+    public String getClassName(Integer classId) {
+        return classMapper.getClassName(classId);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(String userId) {
         // 保存日志

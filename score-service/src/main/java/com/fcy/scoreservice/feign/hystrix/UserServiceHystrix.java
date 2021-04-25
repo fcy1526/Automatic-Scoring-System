@@ -15,4 +15,9 @@ public class UserServiceHystrix implements UserServiceClient {
     public Result<Object> getTotalCount(Integer classId) {
         return null;
     }
+
+    @Override
+    public Result<Object> getClassName(Integer classId) {
+        return null;
+    }
 }

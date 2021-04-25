@@ -79,4 +79,11 @@ public interface ClassService {
      * @return
      */
     Integer getTotalCount(Integer classId);
+
+    /**
+     * 获取班级名称
+     * @param classId
+     * @return
+     */
+    String getClassName(Integer classId);
 }

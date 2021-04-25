@@ -78,4 +78,28 @@ public class BtnAuthName {
      * 删除角色
      */
     public static final String ROLE_DELETE = "ROLE_DELETE";
+    /**
+     * 开启课程阶段
+     */
+    public static final String OPEN_STAGE = "OPEN_STAGE";
+    /**
+     * 结束课程阶段
+     */
+    public static final String CLOSE_STAGE = "CLOSE_STAGE";
+    /**
+     * 开启小组互评
+     */
+    public static final String OPEN_MUTUAL = "OPEN_MUTUAL";
+    /**
+     * 添加小组
+     */
+    public static final String ADD_GROUP = "ADD_GROUP";
+    /**
+     * 删除小组
+     */
+    public static final String DELETE_GROUP = "DELETE_GROUP";
+    /**
+     * 修改小组
+     */
+    public static final String EDIT_GROUP = "EDIT_GROUP";
 }

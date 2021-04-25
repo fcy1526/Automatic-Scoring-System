@@ -62,6 +62,10 @@
         select count(1) from t_userinfo where class_id = #{classId}
     </select>
 
+    <select id="getClassName" resultType="java.lang.String">
+        select name from t_class where class_id = #{classId}
+    </select>
+
     <insert id="addList">
         insert into t_teach_class(userid, class_id) values
         <foreach collection="teachClasses" separator="," item="classId">

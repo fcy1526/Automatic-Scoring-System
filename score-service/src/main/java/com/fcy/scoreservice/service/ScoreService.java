@@ -1,6 +1,7 @@
 package com.fcy.scoreservice.service;
 
 import com.fcy.scoreservice.entity.StudentScore;
+import com.fcy.scoreservice.entity.TotalScore;
 import com.fcy.scoreservice.entity.dto.GroupScoreDto;
 import com.fcy.scoreservice.entity.dto.ProportionDto;
 import com.fcy.scoreservice.entity.dto.ScoreClassInfoDto;
@@ -110,4 +111,11 @@ public interface ScoreService {
      * @return
      */
     PageInfo<UserScoreVo> getUserScore(Map map);
+
+    /**
+     * 获取学生成绩
+     * @param courseId
+     * @return
+     */
+    Map<String, List<TotalScore>> getScore(Integer courseId);
 }

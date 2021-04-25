@@ -239,4 +239,24 @@
         </if>
     </select>
 
+    <resultMap id="TotalScoreResultMap" type="com.fcy.scoreservice.entity.TotalScore">
+        <result column="student_id" jdbcType="VARCHAR" property="studentId"></result>
+        <result column="truename" jdbcType="VARCHAR" property="trueName"></result>
+        <result column="score" jdbcType="FLOAT" property="score"></result>
+        <result column="student_score" jdbcType="FLOAT" property="studentScore"></result>
+        <result column="group_score" jdbcType="FLOAT" property="groupScore"></result>
+        <result column="mutual_score" jdbcType="FLOAT" property="mutualScore"></result>
+        <result column="leader_score" jdbcType="FLOAT" property="leaderScore"></result>
+        <result column="teacher_score" jdbcType="FLOAT" property="teacherScore"></result>
+    </resultMap>
+
+    <select id="getTotalScore" resultMap="TotalScoreResultMap">
+        select ts.*,u.truename from t_total_score ts
+        join t_userinfo u on ts.student_id = u.userid
+        where ts.student_id in
+        <foreach collection="list" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+
 </mapper>
